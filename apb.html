@@ -10,6 +10,7 @@
       canvas { border: 0px none; background-color: black; height:100%; width:100%;  }
       canvas { outline: 0px solid transparent; caret-color: transparent; cursor:default }
       #file-inputs { position: absolute; top: 10px; left: 10px; }
+      textarea { width: 100%; box-sizing: border-box; }
     </style>
   </head>
   <body onload="init()">
@@ -17,16 +18,18 @@
       <h1>AutoPatchBoot</h1>
       <h2>UEFI firmware patcher</h2>
       <h3>Select your rom files and optionally supply your own patches.</h3>
-      <h3>By default, attempts to patch out secure boot by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS</h3>
+      <h3>By default, attempts to patch out secure boot by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe</h3>
+      <h3>Tested on AMI based firmwares</h3>
       <h3>Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood. See <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/patches.txt" target="_blank">this</a> for patch format.</h3>
       <input type="file" id="input-rom" accept=".rom">
       <br>
-      <textarea id="patches-txt" placeholder="Enter patches here, leave empty for default patches:
+      <textarea oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' id="patches-txt" placeholder="Enter patches here, leave empty for default patches:
 # Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe
 F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000"></textarea>
       <br>
       <button id="run-patch">Patch</button>
-      <p class="cpp_std_log"></p>
+      <h3>Output (only updates on completion)</h3>
+      <pre id="output"></pre>
     </div>
     <figure style="overflow:visible;" id="qtspinner">
       <center style="margin-top:1.5em; line-height:150%">
@@ -75,6 +78,9 @@ F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000"></t
           F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000";
 
           document.getElementById('run-patch').addEventListener('click', function() {
+              //reset the log
+              document.getElementById('output').innerText = '';
+              //get the input rom file
               var inputRom = document.getElementById('input-rom').files[0];
               var patchesTxt = document.getElementById('patches-txt').value || defaultPatches;
               

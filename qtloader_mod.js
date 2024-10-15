@@ -370,13 +370,12 @@ function QtLoader(config)
         Module.print = Module.print || function(text) {
             if (config.stdoutEnabled) {
                 console.log(text);
-                // Insert log to <p class="cpp_std_log"></p>
-                var logElement = document.querySelector('p.cpp_std_log');
-                if (logElement) {
-                    logElement.innerHTML += text + '<br>';
-                    // Force the browser to update the DOM
-                    logElement.scrollTop = logElement.scrollHeight;
-                }
+                // insert text into id="output" element
+                document.getElementById("output").innerHTML += text + "<br>";
+                console.log("innerHTML: " + document.getElementById("output").innerHTML);
+
+                document.getElementById('file-inputs').style.display = 'none';
+                document.getElementById('file-inputs').style.display = 'block';
             }
         };
         Module.printErr = Module.printErr || function(text) {
