@@ -370,6 +370,11 @@ function QtLoader(config)
         Module.print = Module.print || function(text) {
             if (config.stdoutEnabled)
                 console.log(text)
+                //insert log to <p class="cpp_std_log"></p>
+                var logElement = document.querySelector('p.cpp_std_log');
+                if (logElement) {
+                    logElement.innerHTML += text + '<br>';
+                }
         };
         Module.printErr = Module.printErr || function(text) {
             // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
