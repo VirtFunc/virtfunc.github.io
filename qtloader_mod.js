@@ -368,13 +368,16 @@ function QtLoader(config)
 
         // Attach standard out/err callbacks.
         Module.print = Module.print || function(text) {
-            if (config.stdoutEnabled)
-                console.log(text)
-                //insert log to <p class="cpp_std_log"></p>
+            if (config.stdoutEnabled) {
+                console.log(text);
+                // Insert log to <p class="cpp_std_log"></p>
                 var logElement = document.querySelector('p.cpp_std_log');
                 if (logElement) {
                     logElement.innerHTML += text + '<br>';
+                    // Force the browser to update the DOM
+                    logElement.scrollTop = logElement.scrollHeight;
                 }
+            }
         };
         Module.printErr = Module.printErr || function(text) {
             // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
