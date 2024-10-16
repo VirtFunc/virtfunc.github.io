@@ -372,10 +372,7 @@ function QtLoader(config)
                 console.log(text);
                 // insert text into id="output" element
                 document.getElementById("output").innerHTML += text + "<br>";
-                console.log("innerHTML: " + document.getElementById("output").innerHTML);
-
-                document.getElementById('file-inputs').style.display = 'none';
-                document.getElementById('file-inputs').style.display = 'block';
+                //console.log("innerHTML: " + document.getElementById("output").innerHTML);
             }
         };
         Module.printErr = Module.printErr || function(text) {
