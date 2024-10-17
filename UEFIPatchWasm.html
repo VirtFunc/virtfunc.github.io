@@ -75,10 +75,10 @@
                   spinner.style.display = 'block';
                   canvas.style.display = 'none';
               },
-              showCanvas: function() {
-                  spinner.style.display = 'none';
-                  canvas.style.display = 'block';
-              },
+              // showCanvas: function() {
+              //     spinner.style.display = 'none';
+              //     canvas.style.display = 'block';
+              // },
           });
           qtLoader.loadEmscriptenModule("UEFIPatch");
 
@@ -106,30 +106,34 @@
           });
           //when any checkbox is clicked, update the preview for patches.txt
           document.getElementById('patches-selector').addEventListener('click', function(e) {
-            //PATCHLIST
-            var patchMapping = {
-              'DSB': "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe \n\
-F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
-              'custom': document.querySelector('textarea[data-patchname="custom"]').value
-            };
-
             if (e.target.type === 'checkbox') {
-              //first, check if we are enabling a custom patch
-              var patchesTxt = '';
-              //loop through all the checkboxes with data-patchname, and add the corresponding patch to patchesTxt
-              //patch name is a variable that is the same as the data-patchname attribute
-              //so we can use it to avoid hardcoding the patch names in our loop.
-              var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-              for (var i = 0; i < checkboxes.length; i++) {
-                var patchName = checkboxes[i].getAttribute('data-patchname');
-                if (checkboxes[i].checked && patchMapping[patchName]) {
-                  patchesTxt += patchMapping[patchName];
-                }
-              }
-              document.getElementById('patches-txt').innerText = patchesTxt;
+              refreshPatches()
             }
           });
         }
+        function refreshPatches() {
+          //PATCHLIST
+          var patchMapping = {
+            'DSB': "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe \n\
+F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
+            'custom': document.querySelector('textarea[data-patchname="custom"]').value
+          };
+          var patchesTxt = '';
+          //loop through all the checkboxes with data-patchname, and add the corresponding patch to patchesTxt
+          //patch name is a variable that is the same as the data-patchname attribute
+          //so we can use it to avoid hardcoding the patch names in our loop.
+          var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+          for (var i = 0; i < checkboxes.length; i++) {
+            var patchName = checkboxes[i].getAttribute('data-patchname');
+            if (checkboxes[i].checked && patchMapping[patchName]) {
+              patchesTxt += patchMapping[patchName];
+            }
+          }
+          document.getElementById('patches-txt').innerText = patchesTxt;
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshPatches();
+        });
     </script>
     <script type="text/javascript" src="qtloader_mod.js"></script>
   </body>
