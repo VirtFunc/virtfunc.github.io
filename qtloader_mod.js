@@ -407,9 +407,7 @@ function QtLoader(config) {
       function (text) {
         if (config.stdoutEnabled) {
           console.log(text);
-          // insert text into id="output" element
           document.getElementById("output").innerHTML += text + "<br>";
-          //console.log("innerHTML: " + document.getElementById("output").innerHTML);
         }
       };
     Module.printErr =
