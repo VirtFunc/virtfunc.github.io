@@ -18,7 +18,7 @@
       <h1>WASM UEFIPatch</h1>
       <h2>UEFI firmware patcher</h2>
       <h3>Select your rom files and optionally supply your own patches.</h3>
-      <h3>Buggy handling of multiple patches only works reliably on the first patch.</h3>
+      <!-- <h3>Buggy handling of multiple patches only works reliably on the first patch.</h3> -->
       <h3>Disable Secure Boot: Patch out secure boot on AMD AMI firmwares by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe</h3>
       <h3>Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood. See <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/patches.txt" target="_blank">this</a> for patch format.</h3>
       <input type="file" id="input-rom" accept=".rom">
@@ -95,12 +95,9 @@
                   var reader = new FileReader();
                   reader.onload = function(e) {
                       var inputRomArray = new Uint8Array(e.target.result);
-                      Module.ccall('getFilename', null, [], []);
-                      Module.ccall('getFilename', null, [], []);
-                      FS.writeFile('INPUT.ROM', inputRomArray);
-                      FS.writeFile('patches.txt', patchesTxt);
+                      FS.writeFile("INPUT.ROM", inputRomArray);
+                      FS.writeFile("patches.txt", patchesTxt);
                       Module.ccall('runPatch', null, [], []);
-
                   };
                   reader.readAsArrayBuffer(inputRom);
               } else {
