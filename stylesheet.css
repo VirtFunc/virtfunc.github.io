@@ -32,6 +32,9 @@ a:visited {
 input[type="checkbox"] {
     margin-right: 1rem;
 }
+.title {
+    margin-bottom: 1rem;
+}
 
 #patches-selector {
     display: inline-block;
