@@ -6,13 +6,13 @@ function init() {
     showError: function (errorText) {
       status.innerHTML = errorText;
     },
-    showExit: function () {
-      status.innerHTML = "Application exit";
-      if (qtLoader.exitCode !== undefined)
-        status.innerHTML += " with code " + qtLoader.exitCode;
-      if (qtLoader.exitText !== undefined)
-        status.innerHTML += " (" + qtLoader.exitText + ")";
-    },
+    // showExit: function () {
+    //   status.innerHTML = "Application exit";
+    //   if (qtLoader.exitCode !== undefined)
+    //     status.innerHTML += " with code " + qtLoader.exitCode;
+    //   if (qtLoader.exitText !== undefined)
+    //     status.innerHTML += " (" + qtLoader.exitText + ")";
+    // },
   });
   qtLoader.loadEmscriptenModule("UEFIPatch");
 
@@ -20,16 +20,27 @@ function init() {
     //reset the log
     document.getElementById("output").innerText = "";
     //get the input rom file
+    //Module.ccall("runPatchByteArray", null, [], []);
     var inputRom = document.getElementById("input-rom").files[0];
     var patchesTxt = document.getElementById("patches-txt").innerText;
-
     if (inputRom) {
       var reader = new FileReader();
       reader.onload = function (e) {
         var inputRomArray = new Uint8Array(e.target.result);
-        FS.writeFile("INPUT.ROM", inputRomArray);
-        FS.writeFile("patches.txt", patchesTxt);
+        FS.writeFile("/INPUT.ROM", inputRomArray);
+        FS.writeFile("/patch.txt", patchesTxt);
         Module.ccall("runPatch", null, [], []);
+
+        data = FS.readFile("/OUTPUT.ROM");
+        var blob = new Blob([data], {
+          type: "application/octet-stream",
+        });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "OUTPUT.ROM";
+        a.click();
+        URL.revokeObjectURL(url);
       };
       reader.readAsArrayBuffer(inputRom);
     } else {
@@ -45,10 +56,11 @@ function init() {
       }
     });
 }
+
 function refreshPatches() {
   //PATCHLIST
   var patchMapping = {
-    DSB: "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe \n\
+    CSB: "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe \n\
 F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
     custom: document.querySelector('textarea[data-patchname="custom"]').value,
   };
@@ -68,3 +80,8 @@ F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
 document.addEventListener("DOMContentLoaded", function () {
   refreshPatches();
 });
+document
+  .querySelector('textarea[data-patchname="custom"]')
+  .addEventListener("input", function () {
+    refreshPatches();
+  });

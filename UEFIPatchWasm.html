@@ -12,8 +12,7 @@
       <h1>WASM UEFIPatch</h1>
       <h2>UEFI firmware patcher</h2>
       <h3>Select your rom files and configure your patches.</h3>
-      <!-- <h3>Buggy handling of multiple patches only works reliably on the first patch.</h3> -->
-      <h3>Disable Secure Boot: Patch out secure boot on AMD AMI firmwares by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe</h3>
+      <h3>Circumvent Secure Boot: Patch out secure boot on AMD AMI firmwares by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe</h3>
       <h3>Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood. See <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/patches.txt" target="_blank">this</a> for patch format.</h3>
       <h3>A word of warning, since the old UEFIPatch engine is used, it has been known to <a href="https://github.com/LongSoft/UEFITool/issues/192">break</a> some BIOSes. Proceed only if you have recovery method.<h3>
       <input type="file" id="input-rom" accept=".rom">
@@ -21,7 +20,7 @@
       <div id="patches-selector">
         <!-- Checkbox for disable secure boot. -->
         <div id="preset-patches">
-          <input type="checkbox" data-patchname="DSB">Disable Secure Boot (only tested on AMD AMI firmwares).</input>
+          <input type="checkbox" data-patchname="CSB">Circumvent Secure Boot (only tested on AMD AMI firmwares).</input>
         </div>
         <input type="checkbox" data-patchname="custom">Custom</input>
         <textarea id="custom-patch" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' data-patchname="custom" placeholder="Enter custom patches here"></textarea>

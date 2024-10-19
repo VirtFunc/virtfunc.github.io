@@ -231,8 +231,9 @@ function QtLoader(config) {
       };
   }
 
-  config.restartMode = config.restartMode || "DoNotRestart";
-  config.restartLimit = config.restartLimit || 10;
+  config.restartMode = config.restartMode || "RestartOnCrash";
+  config.restartType = config.restartType || "RestartModule";
+  config.restartLimit = config.restartLimit || -1;
 
   if (config.stdoutEnabled === undefined) config.stdoutEnabled = true;
   if (config.stderrEnabled === undefined) config.stderrEnabled = true;
@@ -407,7 +408,9 @@ function QtLoader(config) {
       function (text) {
         if (config.stdoutEnabled) {
           console.log(text);
-          document.getElementById("output").innerHTML += text + "<br>";
+          const output = document.getElementById("output");
+          output.appendChild(document.createTextNode(text));
+          output.appendChild(document.createElement("br"));
         }
       };
     Module.printErr =
