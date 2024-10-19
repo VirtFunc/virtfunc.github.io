@@ -11,25 +11,33 @@
     <div id="file-inputs">
       <h1>WASM UEFIPatch</h1>
       <h2>UEFI firmware patcher</h2>
-      <h3>Select your rom files and configure your patches.</h3>
-      <h3>Circumvent Secure Boot: Patch out secure boot on AMD AMI firmwares by replacing all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe</h3>
-      <h3>Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood. See <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/patches.txt" target="_blank">this</a> for patch format.</h3>
-      <h3>A word of warning, since the old UEFIPatch engine is used, it has been known to <a href="https://github.com/LongSoft/UEFITool/issues/192">break</a> some BIOSes. Proceed only if you have recovery method.<h3>
+      <h3>Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood.</h3>
+      <p><strong>Instructions:</strong> <br>
+        1. Load your ROM file. <br>
+        2. Configure patches. <br>
+        3. Click "Patch". <br>
+      </p>
+      <p><strong>Notes:</strong> <br>
+          Wasm module is ~3MiB so it may take a while to load on slow connections.<br>
+          Old UEFITool engine is used, it has been known to <a href="https://github.com/LongSoft/UEFITool/issues/192">render some BIOSes unbootable.</a>  Proceed only if you have recovery method (or don't care).<br>
+      </p>
       <input type="file" id="input-rom" accept=".rom">
       <br>
       <div id="patches-selector">
         <!-- Checkbox for disable secure boot. -->
+        <p><strong>Patches:</strong></p>
         <div id="preset-patches">
-          <input type="checkbox" data-patchname="CSB">Circumvent Secure Boot (only tested on AMD AMI firmwares).</input>
+          <input type="checkbox" data-patchname="CSB"><strong>CSB</strong> - Circumvent Secure Boot. Replaces all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe. Only known working on AMD AMI boards.<br></input>
         </div>
-        <input type="checkbox" data-patchname="custom">Custom</input>
+        <div id="custom-patches">
+        <input type="checkbox" data-patchname="custom"><strong>custom</strong> - Custom patches. Enter them below. <a href="patches.txt" target="_blank">Patch Format Guide</a></input>
+        </div>
         <textarea id="custom-patch" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' data-patchname="custom" placeholder="Enter custom patches here"></textarea>
       </div>
-      <h3>Pending patches: The below text will be used as patches.txt.</h3>
+      <p><strong>Pending patches:</strong></p>
       <pre id="patches-txt"></pre>
-      <br>
       <button id="run-patch">Patch</button>
-      <h3>Output (only updates on completion)</h3>
+      <p><strong>Output</strong></p>
       <pre id="output"></pre>
     </div>
     <figure style="overflow:visible;">
@@ -38,6 +46,5 @@
     </figure>
     <!-- <canvas id="qtcanvas" oncontextmenu="event.preventDefault()" contenteditable="false"></canvas> -->
     <script src="qt_init.js"></script>
-    <script type="text/javascript" src="qtloader_mod.js"></script>
   </body>
 </html>

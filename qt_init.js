@@ -1,38 +1,25 @@
 function init() {
   var status = document.querySelector("#qtstatus");
-
-  var qtLoader = QtLoader({
-    //canvasElements: [canvas],
-    showError: function (errorText) {
-      status.innerHTML = errorText;
-    },
-    // showExit: function () {
-    //   status.innerHTML = "Application exit";
-    //   if (qtLoader.exitCode !== undefined)
-    //     status.innerHTML += " with code " + qtLoader.exitCode;
-    //   if (qtLoader.exitText !== undefined)
-    //     status.innerHTML += " (" + qtLoader.exitText + ")";
-    // },
-  });
-  qtLoader.loadEmscriptenModule("UEFIPatch");
-
-  document.getElementById("run-patch").addEventListener("click", function () {
-    //reset the log
-    document.getElementById("output").innerText = "";
-    //get the input rom file
-    //Module.ccall("runPatchByteArray", null, [], []);
-    var inputRom = document.getElementById("input-rom").files[0];
-    var patchesTxt = document.getElementById("patches-txt").innerText;
-    if (inputRom) {
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        var inputRomArray = new Uint8Array(e.target.result);
-        FS.writeFile("/INPUT.ROM", inputRomArray);
-        FS.writeFile("/patch.txt", patchesTxt);
-        Module.ccall("runPatch", null, [], []);
-
-        data = FS.readFile("/OUTPUT.ROM");
-        var blob = new Blob([data], {
+  var output = document.getElementById("output");
+  var worker = new Worker("worker.js");
+  //set run-patch text to "loading..." and disable it
+  document.getElementById("run-patch").innerText = "Loading...";
+  document.getElementById("run-patch").disabled = true;
+  worker.onmessage = function (e) {
+    switch (e.data.type) {
+      case "ready":
+        document.getElementById("run-patch").disabled = false;
+        document.getElementById("run-patch").innerText = "Patch";
+        break;
+      case "error":
+        status.innerHTML = e.data.text;
+        break;
+      case "stdout":
+      case "stderr":
+        output.innerHTML += e.data.text + "\n";
+        break;
+      case "complete":
+        var blob = new Blob([e.data.data], {
           type: "application/octet-stream",
         });
         var url = URL.createObjectURL(blob);
@@ -41,6 +28,30 @@ function init() {
         a.download = "OUTPUT.ROM";
         a.click();
         URL.revokeObjectURL(url);
+        document.getElementById("run-patch").innerText = "Patch";
+        document.getElementById("run-patch").disabled = false;
+        break;
+    }
+  };
+
+  // Initially disable the button
+  //document.getElementById("run-patch").disabled = true;
+
+  document.getElementById("run-patch").addEventListener("click", function () {
+    output.innerText = "";
+    var inputRom = document.getElementById("input-rom").files[0];
+    var patchesTxt = document.getElementById("patches-txt").innerText;
+    if (inputRom) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var inputRomArray = new Uint8Array(e.target.result);
+        document.getElementById("run-patch").innerText = "Patching...";
+        document.getElementById("run-patch").disabled = true;
+        worker.postMessage({
+          type: "runPatch",
+          inputRomArray: inputRomArray,
+          patchesTxt: patchesTxt,
+        });
       };
       reader.readAsArrayBuffer(inputRom);
     } else {

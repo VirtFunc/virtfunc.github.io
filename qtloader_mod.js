@@ -319,11 +319,6 @@ function QtLoader(config) {
       setStatus("Error");
       return;
     }
-    if (!webGLSupported()) {
-      self.error = "Error: WebGL is not supported";
-      setStatus("Error");
-      return;
-    }
 
     // Continue waiting if loadEmscriptenModule() is called again
     if (publicAPI.status == "Loading") return;
@@ -589,9 +584,16 @@ function QtLoader(config) {
     if (status != "Loading" && publicAPI.status == status) return;
     publicAPI.status = status;
 
-    window.setTimeout(function () {
-      handleStatusChange();
-    }, 0);
+    if (typeof window !== "undefined") {
+      window.setTimeout(function () {
+        handleStatusChange();
+      }, 0);
+    } else {
+      // We're in a Web Worker
+      setTimeout(function () {
+        handleStatusChange();
+      }, 0);
+    }
   }
 
   function addCanvasElement(element) {
