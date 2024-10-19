@@ -128,7 +128,6 @@
 //      Sets the logical font dpi for the application.
 
 var Module = {};
-
 function QtLoader(config) {
   function webAssemblySupported() {
     return typeof WebAssembly !== "undefined";
@@ -313,7 +312,7 @@ function QtLoader(config) {
     // 3) Configure the emscripten Module object
     // 4) Start the emcripten runtime, after which emscripten takes over
 
-    // Check for Wasm & WebGL support; set error and return before downloading resources if missing
+    // Check for Wasm support, we dont care about WebGL; set error and return before downloading resources if missing
     if (!webAssemblySupported()) {
       self.error = "Error: WebAssembly is not supported";
       setStatus("Error");

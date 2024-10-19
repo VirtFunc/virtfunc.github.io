@@ -34,9 +34,6 @@ function init() {
     }
   };
 
-  // Initially disable the button
-  //document.getElementById("run-patch").disabled = true;
-
   document.getElementById("run-patch").addEventListener("click", function () {
     output.innerText = "";
     var inputRom = document.getElementById("input-rom").files[0];

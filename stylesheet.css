@@ -8,19 +8,36 @@ body {
     color: #00ff00;
     font-family: monospace;
 }
-#file-inputs {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+#main {
+    display: inline-block;
+    padding: 1rem;
 }
 textarea {
     width: 100%;
-    box-sizing: border-box;
 }
 a {
     text-decoration: none;
     color: white;
 }
+a:hover {
+    text-decoration: underline;
+}
 a:visited {
     color: white;
+}
+#input-rom {
+    margin-top: 1rem;
+}
+
+input[type="checkbox"] {
+    margin-right: 1rem;
+}
+
+#patches-selector {
+    display: inline-block;
+    //margin-bottom: 1rem;
+}
+
+#custom-patches {
+    margin-bottom: 1rem;
 }
