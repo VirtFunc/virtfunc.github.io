@@ -22,10 +22,13 @@ function init() {
         var blob = new Blob([e.data.data], {
           type: "application/octet-stream",
         });
+        //get file name from the input rom file name and add _patched to the filename before extension
+        var inputRomName = document.getElementById("input-rom").files[0].name;
+        var outputRomName = inputRomName.replace(/(\.[^/.]+)+$/, "_patched$1");
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = "OUTPUT.ROM";
+        a.download = outputRomName;
         a.click();
         URL.revokeObjectURL(url);
         document.getElementById("run-patch").innerText = "Patch";
