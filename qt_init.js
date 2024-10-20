@@ -14,6 +14,7 @@ function init() {
       case "error":
         document.getElementById("run-patch").disabled = false;
         document.getElementById("run-patch").innerText = "Patch";
+        // we should not enable the button here. the user should reload the page.
         status.innerHTML = e.data.text;
         break;
       case "stdout":

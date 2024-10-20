@@ -25,9 +25,16 @@ self.onmessage = function (e) {
     var inputRomArray = e.data.inputRomArray;
     var patchesTxt = e.data.patchesTxt;
 
-    // Use Module.FS instead of FS
-    FS.writeFile("/INPUT.ROM", inputRomArray);
-    FS.writeFile("/patch.txt", patchesTxt);
+    try {
+      FS.writeFile("/INPUT.ROM", inputRomArray);
+      FS.writeFile("/patch.txt", patchesTxt);
+    } catch (e) {
+      postMessage({
+        type: "error",
+        text: "Could not write input and/or patch to virtual FS.",
+      });
+      return;
+    }
     Module.ccall("runPatch", null, [], []);
     // try to create outputdata variable.
     try {
@@ -37,10 +44,15 @@ self.onmessage = function (e) {
         type: "error",
         text: "Failed to read output ROM. It may not exist.",
       });
+      return;
     }
-    FS.unlink("/INPUT.ROM");
-    FS.unlink("/OUTPUT.ROM");
-    FS;
+    try {
+      FS.unlink("/INPUT.ROM");
+      FS.unlink("/patch.txt");
+      FS.unlink("/OUTPUT.ROM");
+    } catch (e) {
+      console.log("Deleting one or more temp files failed.");
+    }
     postMessage({ type: "complete", data: outputData });
   }
 };
