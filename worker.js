@@ -29,8 +29,18 @@ self.onmessage = function (e) {
     FS.writeFile("/INPUT.ROM", inputRomArray);
     FS.writeFile("/patch.txt", patchesTxt);
     Module.ccall("runPatch", null, [], []);
-
-    var outputData = FS.readFile("/OUTPUT.ROM");
+    // try to create outputdata variable.
+    try {
+      var outputData = FS.readFile("/OUTPUT.ROM");
+    } catch (e) {
+      postMessage({
+        type: "error",
+        text: "Failed to read output ROM. It may not exist.",
+      });
+    }
+    FS.unlink("/INPUT.ROM");
+    FS.unlink("/OUTPUT.ROM");
+    FS;
     postMessage({ type: "complete", data: outputData });
   }
 };

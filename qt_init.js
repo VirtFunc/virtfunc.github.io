@@ -12,6 +12,8 @@ function init() {
         document.getElementById("run-patch").innerText = "Patch";
         break;
       case "error":
+        document.getElementById("run-patch").disabled = false;
+        document.getElementById("run-patch").innerText = "Patch";
         status.innerHTML = e.data.text;
         break;
       case "stdout":
@@ -39,6 +41,7 @@ function init() {
 
   document.getElementById("run-patch").addEventListener("click", function () {
     output.innerText = "";
+    status.innerText = "";
     var inputRom = document.getElementById("input-rom").files[0];
     var patchesTxt = document.getElementById("patches-txt").innerText;
     if (inputRom) {
