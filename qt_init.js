@@ -2,12 +2,13 @@ function init() {
   var status = document.querySelector("#qtstatus");
   var output = document.getElementById("output");
   var worker = new Worker("worker.js");
-  //set run-patch text to "loading..." and disable it
+  // inform the user that the worker is not ready. loading from network.
   document.getElementById("run-patch").innerText = "Loading...";
   document.getElementById("run-patch").disabled = true;
   worker.onmessage = function (e) {
     switch (e.data.type) {
       case "ready":
+        // enable the patch button
         document.getElementById("run-patch").disabled = false;
         document.getElementById("run-patch").innerText = "Patch";
         break;
@@ -72,11 +73,30 @@ function init() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  refreshPatches();
+});
+document
+  .querySelector('textarea[data-patchname="custom"]')
+  .addEventListener("input", function () {
+    refreshPatches();
+  });
+
 function refreshPatches() {
   //PATCHLIST
   var patchMapping = {
-    CSB: "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe \n\
+    CSB: "# Replace EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe\n\
 F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
+    TPM2EPS:
+      "# Part 1 TPM2 EPS Patch: AmiTpm\n\
+0D8039FF-49E9-4CC9-A806-BB7C31B0BCB0 12 P:83C41485C078528B45FC85C0:83C41485C079528B45FC85C0\n\
+# Part 2 TPM2 EPS Patch: Tpm20PlatformDxe\n\
+# 2 bytes patched (FF FF -> 00 00)\n\
+0718AD81-F26A-4850-A6EC-F268E309D707 10 P:FFFF0000000000000100000000000000000000000000000000000000000000006400620000000000454649:00000000000000000100000000000000000000000000000000000000000000006400620000000000454649\n\
+# 2 bytes patched (14 -> 00, 20 -> 00)\n\
+0718AD81-F26A-4850-A6EC-F268E309D707 10 P:750EB814000000668905A6CD0000EB1380F9027507B82000:750EB800000000668905A6CD0000EB1380F9027507B80000\n\
+# 2 bytes patched (FF FF -> 00 00)\n\
+0718AD81-F26A-4850-A6EC-F268E309D707 10 P:B9FFFF00004533:B9000000004533\n",
     custom: document.querySelector('textarea[data-patchname="custom"]').value,
   };
   var patchesTxt = "";
@@ -92,11 +112,3 @@ F80697E9-7FD6-4665-8646-88E33EF71DFC 10 P:1A00000000000080:0000000000000000\n",
   }
   document.getElementById("patches-txt").innerText = patchesTxt;
 }
-document.addEventListener("DOMContentLoaded", function () {
-  refreshPatches();
-});
-document
-  .querySelector('textarea[data-patchname="custom"]')
-  .addEventListener("input", function () {
-    refreshPatches();
-  });

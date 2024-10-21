@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0"/>
-    <title>WASM UEFIPatch</title>
+    <title>Wasm UEFIPatch</title>
     <link rel="stylesheet" href="stylesheet.css">
   </head>
   <body onload="init()">
     <div id="main">
-      <h1>WASM UEFIPatch</h1>
+      <h1>Wasm UEFIPatch</h1>
       <h2>UEFI firmware patcher</h2>
       <p class="title"><strong>Instructions:</strong></p>
       <p>
@@ -21,9 +21,9 @@
       <p>
           Modified and compiled by <a href="https://vanishingfork.net" target="_blank">vanishingfork</a>.<br>
           Uses <a href="https://github.com/LongSoft/UEFITool/blob/old_engine/UEFIPatch/" target="_blank">UEFIPatch</a> under the hood.<br>
-          Wasm module is ~3MiB so it may take a while to load on slow connections.<br>
-          Old UEFITool engine is used, it has been known to <a href="https://github.com/LongSoft/UEFITool/issues/192">render some BIOSes unbootable.</a>  Proceed only if you have recovery method (or don't care).<br>
-          I get roughly 80% the speed of Linux UEFIPatch on my machine. (4.8s Linux, 6.0s Wasm)<br>
+          Wasm module is ~3MiB, may load slowly as a result.<br>
+          Old UEFITool engine is used, it has been known to <a href="https://github.com/LongSoft/UEFITool/issues/192">break some firmware images</a>. Proceed only if you have recovery method (or don't care).<br>
+          Performance is roughly 80% the of the CLI version, due to Wasm overhead.<br>
       </p>
       <label for="input-rom" class="file-upload-label"><strong>Choose Firmware:</strong><br></label>
       <input type="file" id="input-rom" accept=".rom,.bin,.hex,.fw,.img,.bin,.iso">
@@ -33,9 +33,10 @@
         <p><strong>Patches:</strong></p>
         <div id="preset-patches">
           <input type="checkbox" data-patchname="CSB"><strong>CSB</strong> - Circumvent Secure Boot. Replaces all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe. Only known working on AMD AMI boards.<br></input>
+          <input type="checkbox" data-patchname="TPM2EPS"><strong>TPM2EPS</strong> Change fTPM EPS. <a href="https://www.unknowncheats.me/forum/valorant/649260-tpm-spoofer.html">Source</a>. Highly untested, WIP. Will almost certainly brick your firmware.<br></input>
         </div>
         <div id="custom-patches">
-        <input type="checkbox" data-patchname="custom"><strong>custom</strong> - Custom patches. Enter them below. <a href="patches.txt" target="_blank">Patch Format Guide</a></input>
+        <input type="checkbox" data-patchname="custom"><strong>custom</strong> - Custom patches, enter below. <a href="patches.txt" target="_blank">Patch Format Guide</a></input>
         </div>
         <textarea id="custom-patch" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' data-patchname="custom" placeholder="Enter custom patches here"></textarea>
       </div>

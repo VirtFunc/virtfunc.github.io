@@ -133,49 +133,18 @@ function QtLoader(config) {
     return typeof WebAssembly !== "undefined";
   }
 
-  function webGLSupported() {
-    // We expect that WebGL is supported if WebAssembly is; however
-    // the GPU may be blacklisted.
-    try {
-      var canvas = document.createElement("canvas");
-      return !!(
-        window.WebGLRenderingContext &&
-        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-      );
-    } catch (e) {
-      return false;
-    }
-  }
-
   function canLoadQt() {
     // The current Qt implementation requires WebAssembly (asm.js is not in use),
     // and also WebGL (there is no raster fallback).
-    return webAssemblySupported() && webGLSupported();
+    return webAssemblySupported();
   }
 
   function removeChildren(element) {
     while (element.firstChild) element.removeChild(element.firstChild);
   }
 
-  function createCanvas() {
-    var canvas = document.createElement("canvas");
-    canvas.className = "QtCanvas";
-    canvas.style.height = "100%";
-    canvas.style.width = "100%";
-
-    // Set contentEditable in order to enable clipboard events; hide the resulting focus frame.
-    canvas.contentEditable = true;
-    canvas.style.outline = "0px solid transparent";
-    canvas.style.caretColor = "transparent";
-    canvas.style.cursor = "default";
-
-    return canvas;
-  }
-
   // Set default state handler functions and create canvases if needed
   if (config.containerElements !== undefined) {
-    config.canvasElements = config.containerElements.map(createCanvas);
-
     config.showError =
       config.showError ||
       function (errorText, container) {
@@ -246,16 +215,10 @@ function QtLoader(config) {
 
   var publicAPI = {};
   publicAPI.webAssemblySupported = webAssemblySupported();
-  publicAPI.webGLSupported = webGLSupported();
   publicAPI.canLoadQt = canLoadQt();
   publicAPI.canLoadApplication = canLoadQt();
   publicAPI.status = undefined;
   publicAPI.loadEmscriptenModule = loadEmscriptenModule;
-  publicAPI.addCanvasElement = addCanvasElement;
-  publicAPI.removeCanvasElement = removeCanvasElement;
-  publicAPI.resizeCanvasElement = resizeCanvasElement;
-  publicAPI.setFontDpi = setFontDpi;
-  publicAPI.fontDpi = fontDpi;
 
   restartCount = 0;
 
@@ -514,20 +477,6 @@ function QtLoader(config) {
     }
   }
 
-  function setCanvasContent() {
-    if (config.containerElements === undefined) {
-      if (config.showCanvas !== undefined) config.showCanvas();
-      return;
-    }
-
-    for (var i = 0; i < config.containerElements.length; ++i) {
-      var container = config.containerElements[i];
-      var canvas = config.canvasElements[i];
-      config.showCanvas(canvas, container);
-      container.appendChild(canvas);
-    }
-  }
-
   function setExitContent() {
     // publicAPI.crashed = true;
 
@@ -561,8 +510,6 @@ function QtLoader(config) {
       setErrorContent();
     } else if (publicAPI.status == "Loading") {
       setLoaderContent();
-    } else if (publicAPI.status == "Running") {
-      setCanvasContent();
     } else if (publicAPI.status == "Exited") {
       if (
         config.restartMode == "RestartOnExit" ||
@@ -594,37 +541,6 @@ function QtLoader(config) {
       }, 0);
     }
   }
-
-  function addCanvasElement(element) {
-    if (publicAPI.status == "Running") Module.qtAddCanvasElement(element);
-    else
-      console.log(
-        "Error: addCanvasElement can only be called in the Running state",
-      );
-  }
-
-  function removeCanvasElement(element) {
-    if (publicAPI.status == "Running") Module.qtRemoveCanvasElement(element);
-    else
-      console.log(
-        "Error: removeCanvasElement can only be called in the Running state",
-      );
-  }
-
-  function resizeCanvasElement(element) {
-    if (publicAPI.status == "Running") Module.qtResizeCanvasElement(element);
-  }
-
-  function setFontDpi(dpi) {
-    Module.qtFontDpi = dpi;
-    if (publicAPI.status == "Running") Module.qtSetFontDpi(dpi);
-  }
-
-  function fontDpi() {
-    return Module.qtFontDpi;
-  }
-
   setStatus("Created");
-
   return publicAPI;
 }
