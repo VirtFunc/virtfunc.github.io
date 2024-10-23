@@ -34,7 +34,7 @@ var Loader = Loader({
 });
 
 //finally load the emscripten module
-Loader.loadEmscriptenModule("UEFIPatch");
+Loader.loadModule("UEFIPatch");
 
 //handle passed message
 self.onmessage = function (e) {

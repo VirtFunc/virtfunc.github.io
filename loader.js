@@ -77,7 +77,7 @@ function Loader(config) {
   pAPI.canLoad = canLoad();
   pAPI.canLoadApplication = canLoad();
   pAPI.status = undefined;
-  pAPI.loadEmscriptenModule = loadEmscriptenModule;
+  pAPI.loadModule = loadModule;
 
   restartCount = 0;
 
@@ -127,7 +127,7 @@ function Loader(config) {
     });
   }
 
-  function loadEmscriptenModule(applicationName) {
+  function loadModule(applicationName) {
     // Loading in loader.js goes through four steps:
     // 1) Check prerequisites
     // 2) Download resources
@@ -141,7 +141,7 @@ function Loader(config) {
       return;
     }
 
-    // Continue waiting if loadEmscriptenModule() is called again
+    // Continue waiting if loadModule() is called again
     if (pAPI.status == "Loading") return;
     self.loaderSubState = "Downloading";
     setStatus("Loading");
@@ -165,11 +165,7 @@ function Loader(config) {
     // Wait for all resources ready
     Promise.all([emscriptenModuleSourcePromise, wasmModulePromise])
       .then(function () {
-        completeLoadEmscriptenModule(
-          applicationName,
-          emscriptenModuleSource,
-          wasmModule,
-        );
+        completeloadModule(applicationName, emscriptenModuleSource, wasmModule);
       })
       .catch(function (error) {
         self.error = error;
@@ -177,7 +173,7 @@ function Loader(config) {
       });
   }
 
-  function completeLoadEmscriptenModule(
+  function completeloadModule(
     applicationName,
     emscriptenModuleSource,
     wasmModule,
@@ -297,7 +293,7 @@ function Loader(config) {
         setStatus("Error");
         return;
       }
-      loadEmscriptenModule(applicationName);
+      loadModule(applicationName);
     };
 
     pAPI.exitCode = undefined;
