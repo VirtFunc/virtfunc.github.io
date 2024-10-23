@@ -1,15 +1,11 @@
 var Module = {};
-function QtLoader(config) {
+function Loader(config) {
   function webAssemblySupported() {
     return typeof WebAssembly !== "undefined";
   }
 
   function canLoad() {
     return webAssemblySupported();
-  }
-
-  function removeChildren(element) {
-    while (element.firstChild) element.removeChild(element.firstChild);
   }
 
   // Set default state handler functions and create canvases if needed
@@ -19,7 +15,7 @@ function QtLoader(config) {
       function (errorText, container) {
         removeChildren(container);
         var errorTextElement = document.createElement("text");
-        errorTextElement.className = "QtError";
+        errorTextElement.className = "Error";
         errorTextElement.innerHTML = errorText;
         return errorTextElement;
       };
@@ -29,15 +25,9 @@ function QtLoader(config) {
       function (loadingState, container) {
         removeChildren(container);
         var loadingText = document.createElement("text");
-        loadingText.className = "QtLoading";
+        loadingText.className = "Loading";
         loadingText.innerHTML = "<p><center> ${loadingState}...</center><p>";
         return loadingText;
-      };
-
-    config.showCanvas =
-      config.showCanvas ||
-      function (canvas, container) {
-        removeChildren(container);
       };
 
     config.showExit =
@@ -62,7 +52,7 @@ function QtLoader(config) {
         var symbolIndex = Math.floor(Math.random() * crashSymbols.length);
         var errorHtml = `<font size='${fontSize}'> ${crashSymbols[symbolIndex]} </font>`;
         var errorElement = document.createElement("text");
-        errorElement.className = "QtExit";
+        errorElement.className = "Exit";
         errorElement.innerHTML = errorHtml;
         return errorElement;
       };
@@ -82,12 +72,12 @@ function QtLoader(config) {
 
   if (config.environment === undefined) config.environment = {};
 
-  var publicAPI = {};
-  publicAPI.webAssemblySupported = webAssemblySupported();
-  publicAPI.canLoad = canLoad();
-  publicAPI.canLoadApplication = canLoad();
-  publicAPI.status = undefined;
-  publicAPI.loadEmscriptenModule = loadEmscriptenModule;
+  var pAPI = {};
+  pAPI.webAssemblySupported = webAssemblySupported();
+  pAPI.canLoad = canLoad();
+  pAPI.canLoadApplication = canLoad();
+  pAPI.status = undefined;
+  pAPI.loadEmscriptenModule = loadEmscriptenModule;
 
   restartCount = 0;
 
@@ -138,7 +128,7 @@ function QtLoader(config) {
   }
 
   function loadEmscriptenModule(applicationName) {
-    // Loading in qtloader.js goes through four steps:
+    // Loading in loader.js goes through four steps:
     // 1) Check prerequisites
     // 2) Download resources
     // 3) Configure the emscripten Module object
@@ -152,7 +142,7 @@ function QtLoader(config) {
     }
 
     // Continue waiting if loadEmscriptenModule() is called again
-    if (publicAPI.status == "Loading") return;
+    if (pAPI.status == "Loading") return;
     self.loaderSubState = "Downloading";
     setStatus("Loading");
 
@@ -242,7 +232,7 @@ function QtLoader(config) {
     Module.printErr =
       Module.printErr ||
       function (text) {
-        // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
+        // Filter out OpenGL getProcAddress warnings. Loader to resolve
         // all possible function/extension names at startup which causes
         // emscripten to spam the console log with warnings.
         if (
@@ -262,8 +252,8 @@ function QtLoader(config) {
     Module.onAbort =
       Module.onAbort ||
       function (text) {
-        publicAPI.crashed = true;
-        publicAPI.exitText = text;
+        pAPI.crashed = true;
+        pAPI.exitText = text;
         setStatus("Exited");
       };
     Module.quit =
@@ -271,11 +261,11 @@ function QtLoader(config) {
       function (code, exception) {
         if (exception.name == "ExitStatus") {
           // Clean exit with code
-          publicAPI.exitText = undefined;
-          publicAPI.exitCode = code;
+          pAPI.exitText = undefined;
+          pAPI.exitCode = code;
         } else {
-          publicAPI.exitText = exception.toString();
-          publicAPI.crashed = true;
+          pAPI.exitText = exception.toString();
+          pAPI.crashed = true;
         }
         setStatus("Exited");
       };
@@ -291,8 +281,6 @@ function QtLoader(config) {
     Module.mainScriptUrlOrBlob = new Blob([emscriptenModuleSource], {
       type: "text/javascript",
     });
-
-    Module.qtCanvasElements = config.canvasElements;
 
     config.restart = function () {
       // Restart by reloading the page. This will wipe all state which means
@@ -312,9 +300,9 @@ function QtLoader(config) {
       loadEmscriptenModule(applicationName);
     };
 
-    publicAPI.exitCode = undefined;
-    publicAPI.exitText = undefined;
-    publicAPI.crashed = false;
+    pAPI.exitCode = undefined;
+    pAPI.exitText = undefined;
+    pAPI.crashed = false;
 
     // Finally evaluate the emscripten application script, which will
     // reference the global Module object created above.
@@ -347,22 +335,22 @@ function QtLoader(config) {
   }
 
   function setExitContent() {
-    // publicAPI.crashed = true;
+    // pAPI.crashed = true;
 
-    if (publicAPI.status != "Exited") return;
+    if (pAPI.status != "Exited") return;
 
     if (config.containerElements === undefined) {
       if (config.showExit !== undefined)
-        config.showExit(publicAPI.crashed, publicAPI.exitCode);
+        config.showExit(pAPI.crashed, pAPI.exitCode);
       return;
     }
 
-    if (!publicAPI.crashed) return;
+    if (!pAPI.crashed) return;
 
     for (container of config.containerElements) {
       var loaderElement = config.showExit(
-        publicAPI.crashed,
-        publicAPI.exitCode,
+        pAPI.crashed,
+        pAPI.exitCode,
         container,
       );
       if (loaderElement !== undefined) container.appendChild(loaderElement);
@@ -371,18 +359,17 @@ function QtLoader(config) {
 
   var committedStatus = undefined;
   function handleStatusChange() {
-    if (publicAPI.status != "Loading" && committedStatus == publicAPI.status)
-      return;
-    committedStatus = publicAPI.status;
+    if (pAPI.status != "Loading" && committedStatus == pAPI.status) return;
+    committedStatus = pAPI.status;
 
-    if (publicAPI.status == "Error") {
+    if (pAPI.status == "Error") {
       setErrorContent();
-    } else if (publicAPI.status == "Loading") {
+    } else if (pAPI.status == "Loading") {
       setLoaderContent();
-    } else if (publicAPI.status == "Exited") {
+    } else if (pAPI.status == "Exited") {
       if (
         config.restartMode == "RestartOnExit" ||
-        (config.restartMode == "RestartOnCrash" && publicAPI.crashed)
+        (config.restartMode == "RestartOnCrash" && pAPI.crashed)
       ) {
         committedStatus = undefined;
         config.restart();
@@ -392,12 +379,12 @@ function QtLoader(config) {
     }
 
     // Send status change notification
-    if (config.statusChanged) config.statusChanged(publicAPI.status);
+    if (config.statusChanged) config.statusChanged(pAPI.status);
   }
 
   function setStatus(status) {
-    if (status != "Loading" && publicAPI.status == status) return;
-    publicAPI.status = status;
+    if (status != "Loading" && pAPI.status == status) return;
+    pAPI.status = status;
 
     if (typeof window !== "undefined") {
       window.setTimeout(function () {
@@ -411,5 +398,5 @@ function QtLoader(config) {
     }
   }
   setStatus("Created");
-  return publicAPI;
+  return pAPI;
 }

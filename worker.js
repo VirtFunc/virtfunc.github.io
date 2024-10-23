@@ -26,15 +26,15 @@ var Module = {
   },
 };
 
-//initialize the qtloader, setup error forwarding
-var qtLoader = QtLoader({
+//initialize the loader, setup error forwarding
+var Loader = Loader({
   showError: function (errorText) {
     postMessage({ type: "error", text: errorText });
   },
 });
 
 //finally load the emscripten module
-qtLoader.loadEmscriptenModule("UEFIPatch");
+Loader.loadEmscriptenModule("UEFIPatch");
 
 //handle passed message
 self.onmessage = function (e) {

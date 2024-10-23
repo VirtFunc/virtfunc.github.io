@@ -1,5 +1,5 @@
 function init() {
-  var status = document.querySelector("#qtstatus");
+  var status = document.querySelector("#status");
   var output = document.getElementById("output");
   var worker = new Worker("worker.js");
   // inform the user that the worker is not ready. loading from network.
