@@ -1,141 +1,10 @@
-/****************************************************************************
- **
- ** Copyright (C) 2018 The Qt Company Ltd.
- ** Contact: https://www.qt.io/licensing/
- **
- ** This file is part of the plugins of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:GPL$
- ** Commercial License Usage
- ** Licensees holding valid commercial Qt licenses may use this file in
- ** accordance with the commercial license agreement provided with the
- ** Software or, alternatively, in accordance with the terms contained in
- ** a written agreement between you and The Qt Company. For licensing terms
- ** and conditions see https://www.qt.io/terms-conditions. For further
- ** information use the contact form at https://www.qt.io/contact-us.
- **
- ** GNU General Public License Usage
- ** Alternatively, this file may be used under the terms of the GNU
- ** General Public License version 3 or (at your option) any later version
- ** approved by the KDE Free Qt Foundation. The licenses are as published by
- ** the Free Software Foundation and appearing in the file LICENSE.GPL3
- ** included in the packaging of this file. Please review the following
- ** information to ensure the GNU General Public License requirements will
- ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
- **
- ** $QT_END_LICENSE$
- **
- ****************************************************************************/
-
-// QtLoader provides javascript API for managing Qt application modules.
-//
-// QtLoader provides API on top of Emscripten which supports common lifecycle
-// tasks such as displaying placeholder content while the module downloads,
-// handing application exits, and checking for browser wasm support.
-//
-// There are two usage modes:
-//  * Managed:  QtLoader owns and manages the HTML display elements like
-//              the loader and canvas.
-//  * External: The embedding HTML page owns the display elements. QtLoader
-//              provides event callbacks which the page reacts to.
-//
-// Managed mode usage:
-//
-//     var config = {
-//         containerElements : [$("container-id")];
-//     }
-//     var qtLoader = QtLoader(config);
-//     qtLoader.loadEmscriptenModule("applicationName");
-//
-// External mode.usage:
-//
-//    var config = {
-//        canvasElements : [$("canvas-id")],
-//        showLoader: function() {
-//            loader.style.display = 'block'
-//            canvas.style.display = 'hidden'
-//        },
-//        showCanvas: function() {
-//            loader.style.display = 'hidden'
-//            canvas.style.display = 'block'
-//            return canvas;
-//        }
-//     }
-//     var qtLoader = QtLoader(config);
-//     qtLoader.loadEmscriptenModule("applicationName");
-//
-// Config keys
-//
-//  containerElements : [container-element, ...]
-//      One or more HTML elements. QtLoader will display loader elements
-//      on these while loading the applicaton, and replace the loader with a
-//      canvas on load complete.
-//  canvasElements : [canvas-element, ...]
-//      One or more canvas elements.
-//  showLoader : function(status, containerElement)
-//      Optional loading element constructor function. Implement to create
-//      a custom loading screen. This function may be called multiple times,
-//      while preparing the application binary. "status" is a string
-//      containing the loading sub-status, and may be either "Downloading",
-//      or "Compiling". The browser may be using streaming compilation, in
-//      which case the wasm module is compiled during downloading and the
-//      there is no separate compile step.
-//  showCanvas : function(containerElement)
-//      Optional canvas constructor function. Implement to create custom
-//      canvas elements.
-//  showExit : function(crashed, exitCode, containerElement)
-//      Optional exited element constructor function.
-//  showError : function(crashed, exitCode, containerElement)
-//      Optional error element constructor function.
-//
-//  path : <string>
-//      Prefix path for wasm file, realative to the loading HMTL file.
-//  restartMode : "DoNotRestart", "RestartOnExit", "RestartOnCrash"
-//      Controls whether the application should be reloaded on exits. The default is "DoNotRestart"
-//  restartType : "RestartModule", "ReloadPage"
-//  restartLimit : <int>
-//     Restart attempts limit. The default is 10.
-//  stdoutEnabled : <bool>
-//  stderrEnabled : <bool>
-//  environment : <object>
-//     key-value environment variable pairs.
-//
-// QtLoader object API
-//
-// webAssemblySupported : bool
-// webGLSupported : bool
-// canLoadQt : bool
-//      Reports if WebAssembly and WebGL are supported. These are requirements for
-//      running Qt applications.
-// loadEmscriptenModule(applicationName)
-//      Loads the application from the given emscripten javascript module file and wasm file
-// status
-//      One of "Created", "Loading", "Running", "Exited".
-// crashed
-//      Set to true if there was an unclean exit.
-// exitCode
-//      main()/emscripten_force_exit() return code. Valid on status change to
-//      "Exited", iff crashed is false.
-// exitText
-//      Abort/exit message.
-// addCanvasElement
-//      Add canvas at run-time. Adds a corresponding QScreen,
-// removeCanvasElement
-//      Remove canvas at run-time. Removes the corresponding QScreen.
-// resizeCanvasElement
-//      Signals to the application that a canvas has been resized.
-// setFontDpi
-//      Sets the logical font dpi for the application.
-
 var Module = {};
 function QtLoader(config) {
   function webAssemblySupported() {
     return typeof WebAssembly !== "undefined";
   }
 
-  function canLoadQt() {
-    // The current Qt implementation requires WebAssembly (asm.js is not in use),
-    // and also WebGL (there is no raster fallback).
+  function canLoad() {
     return webAssemblySupported();
   }
 
@@ -215,8 +84,8 @@ function QtLoader(config) {
 
   var publicAPI = {};
   publicAPI.webAssemblySupported = webAssemblySupported();
-  publicAPI.canLoadQt = canLoadQt();
-  publicAPI.canLoadApplication = canLoadQt();
+  publicAPI.canLoad = canLoad();
+  publicAPI.canLoadApplication = canLoad();
   publicAPI.status = undefined;
   publicAPI.loadEmscriptenModule = loadEmscriptenModule;
 

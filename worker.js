@@ -1,4 +1,4 @@
-importScripts("qtloader_mod.js");
+importScripts("loader.js");
 
 function fsCleanup() {
   const filesToDelete = ["/INPUT.ROM", "/patch.txt", "/OUTPUT.ROM"];
