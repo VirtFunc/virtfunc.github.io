@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Wasm UEFIPatch</title>
-    <link rel="stylesheet" href="stylesheet.css">
+    <link rel="preload" href="stylesheet.css" as="style" onload="this.rel='stylesheet'">
   </head>
   <body style="background-color: black;" onload="init()">
     <div id="main">
@@ -32,10 +32,10 @@
         <p><strong>Patches:</strong></p>
         <div id="preset-patches">
           <input type="checkbox" data-patchname="CSB"><strong>CSB: </strong>Circumvent Secure Boot. Replaces all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe. Only known working on AMD AMI boards.<br></input>
-          <input type="checkbox" data-patchname="TPM2EPS"><strong>TPM2EPS: </strong>Allow changing fTPM EPS. <a href="https://www.unknowncheats.me/forum/valorant/649260-tpm-spoofer.html">Source</a>. Highly untested, WIP. Will almost certainly brick your firmware.<br></input>
+          <input type="checkbox" data-patchname="TPM2EPS"><strong>TPM2EPS: </strong>Allow changing fTPM EPS. Highly untested, WIP. Will almost certainly brick your firmware. <a href="https://www.unknowncheats.me/forum/valorant/649260-tpm-spoofer.html">Source</a>.<br></input>
         </div>
         <div id="custom-patches">
-        <input type="checkbox" data-patchname="custom"><strong>Custom: </strong>Enter below.<a href="patches.txt" target="_blank">Patch Format Guide</a></input>
+        <input type="checkbox" data-patchname="custom"><strong>Custom: </strong>Enter below. <a href="patches.txt" target="_blank">Patch Format Guide</a>.</input>
         </div>
         <textarea id="custom-patch" oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"' data-patchname="custom" placeholder="Enter custom patches here"></textarea>
       </div>
