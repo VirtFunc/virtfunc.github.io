@@ -59,8 +59,6 @@ function Loader(config) {
   }
 
   config.restartMode = config.restartMode || "RestartOnCrash";
-  config.restartType = config.restartType || "RestartModule";
-  config.restartLimit = config.restartLimit || -1;
 
   if (config.stdoutEnabled === undefined) config.stdoutEnabled = true;
   if (config.stderrEnabled === undefined) config.stderrEnabled = true;
@@ -111,19 +109,40 @@ function Loader(config) {
 
   function fetchCompileWasm(filePath) {
     return fetchResource(filePath).then(function (response) {
+      const contentLength = response.headers.get("Content-Length");
+      const total = parseInt(contentLength, 10);
+      let loaded = 0;
+      const reader = response.body.getReader();
+      const stream = new ReadableStream({
+        start(controller) {
+          function push() {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                controller.close();
+                self.postMessage({ type: "wasmProgress", progress: 100 }); // Send 100% completion
+                return;
+              }
+              loaded += value.length;
+              const progress = (loaded / total) * 100;
+              self.postMessage({
+                type: "wasmProgress",
+                progress: Math.round(progress),
+              }); // Send progress to main thread
+              controller.enqueue(value);
+              push();
+            });
+          }
+          push();
+        },
+      });
+      const response2 = new Response(stream, response);
       if (typeof WebAssembly.compileStreaming !== "undefined") {
         self.loaderSubState = "Downloading/Compiling";
         setStatus("Loading");
-        return WebAssembly.compileStreaming(response).catch(function (error) {
-          // compileStreaming may/will fail if the server does not set the correct
-          // mime type (application/wasm) for the wasm file. Fall back to fetch,
-          // then compile in this case.
-          return fetchThenCompileWasm(response);
+        return WebAssembly.compileStreaming(response2).catch(function (error) {
+          return fetchThenCompileWasm(response2);
         });
-      } else {
-        // Fall back to fetch, then compile if compileStreaming is not supported
-        return fetchThenCompileWasm(response);
-      }
+      } else return fetchThenCompileWasm(response2);
     });
   }
 
@@ -278,24 +297,6 @@ function Loader(config) {
       type: "text/javascript",
     });
 
-    config.restart = function () {
-      // Restart by reloading the page. This will wipe all state which means
-      // reload loops can't be prevented.
-      if (config.restartType == "ReloadPage") {
-        location.reload();
-      }
-
-      // Restart by readling the emscripten app module.
-      ++self.restartCount;
-      if (self.restartCount > config.restartLimit) {
-        self.error =
-          "Error: This application has crashed too many times and has been disabled. Reload the page to try again.";
-        setStatus("Error");
-        return;
-      }
-      loadModule(applicationName);
-    };
-
     pAPI.exitCode = undefined;
     pAPI.exitText = undefined;
     pAPI.crashed = false;
@@ -317,32 +318,14 @@ function Loader(config) {
     }
   }
 
-  function setLoaderContent() {
-    if (config.containerElements === undefined) {
-      if (config.showLoader !== undefined)
-        config.showLoader(self.loaderSubState);
-      return;
-    }
-
-    for (container of config.containerElements) {
-      var loaderElement = config.showLoader(self.loaderSubState, container);
-      container.appendChild(loaderElement);
-    }
-  }
-
   function setExitContent() {
-    // pAPI.crashed = true;
-
     if (pAPI.status != "Exited") return;
-
     if (config.containerElements === undefined) {
       if (config.showExit !== undefined)
         config.showExit(pAPI.crashed, pAPI.exitCode);
       return;
     }
-
     if (!pAPI.crashed) return;
-
     for (container of config.containerElements) {
       var loaderElement = config.showExit(
         pAPI.crashed,
@@ -352,28 +335,12 @@ function Loader(config) {
       if (loaderElement !== undefined) container.appendChild(loaderElement);
     }
   }
-
   var committedStatus = undefined;
   function handleStatusChange() {
     if (pAPI.status != "Loading" && committedStatus == pAPI.status) return;
     committedStatus = pAPI.status;
-
-    if (pAPI.status == "Error") {
-      setErrorContent();
-    } else if (pAPI.status == "Loading") {
-      setLoaderContent();
-    } else if (pAPI.status == "Exited") {
-      if (
-        config.restartMode == "RestartOnExit" ||
-        (config.restartMode == "RestartOnCrash" && pAPI.crashed)
-      ) {
-        committedStatus = undefined;
-        config.restart();
-      } else {
-        setExitContent();
-      }
-    }
-
+    if (pAPI.status == "Error") setErrorContent();
+    else if (pAPI.status == "Exited") setExitContent();
     // Send status change notification
     if (config.statusChanged) config.statusChanged(pAPI.status);
   }
@@ -381,7 +348,6 @@ function Loader(config) {
   function setStatus(status) {
     if (status != "Loading" && pAPI.status == status) return;
     pAPI.status = status;
-
     if (typeof window !== "undefined") {
       window.setTimeout(function () {
         handleStatusChange();

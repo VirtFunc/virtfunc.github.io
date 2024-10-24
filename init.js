@@ -1,21 +1,37 @@
+function patchButtonState(string, disabled) {
+  document.getElementById("run-patch").disabled = disabled;
+  document.getElementById("run-patch").innerText = string;
+}
+
 function init() {
   var status = document.querySelector("#status");
   var output = document.getElementById("output");
   var worker = new Worker("worker.js");
   // inform the user that the worker is not ready. loading from network.
-  document.getElementById("run-patch").innerText = "Loading...";
-  document.getElementById("run-patch").disabled = true;
+  patchButtonState("Loading...", true);
   worker.onmessage = function (e) {
     switch (e.data.type) {
+      case "wasmProgress":
+        const progressBar = document.getElementById("wasm-progress-bar");
+        const progressText = document.getElementById("wasm-progress-text");
+
+        if (progressBar && progressText) {
+          progressBar.style.width = e.data.progress + "%";
+          progressText.textContent = `Loading Wasm: ${e.data.progress}%`;
+
+          // Hide the progress elements when complete
+          if (e.data.progress === 100) {
+            progressBar.parentElement.style.display = "none";
+            progressText.style.display = "none";
+          }
+        }
+
       case "ready":
         // enable the patch button
-        document.getElementById("run-patch").disabled = false;
-        document.getElementById("run-patch").innerText = "Patch";
+        patchButtonState("Patch", false);
         break;
       case "error":
-        document.getElementById("run-patch").disabled = false;
-        document.getElementById("run-patch").innerText = "Patch";
-        // we should not enable the button here. the user should reload the page.
+        patchButtonState("Patch", false);
         status.innerHTML = e.data.text;
         break;
       case "stdout":
@@ -35,8 +51,7 @@ function init() {
         a.download = outputRomName;
         a.click();
         URL.revokeObjectURL(url);
-        document.getElementById("run-patch").innerText = "Patch";
-        document.getElementById("run-patch").disabled = false;
+        patchButtonState("Patch", false);
         break;
     }
   };
@@ -72,7 +87,11 @@ function init() {
       }
     });
 }
-
+document.body.addEventListener("dragover", (e) => e.preventDefault());
+document.body.addEventListener("drop", (e) => {
+  e.preventDefault();
+  document.getElementById("input-rom").files = e.dataTransfer.files;
+});
 document.addEventListener("DOMContentLoaded", function () {
   refreshPatches();
 });

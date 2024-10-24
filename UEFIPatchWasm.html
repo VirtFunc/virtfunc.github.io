@@ -4,15 +4,21 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Wasm UEFIPatch</title>
-    <link rel="preload" href="stylesheet.css" as="style" onload="this.rel='stylesheet'">
+    <link rel="stylesheet" href="stylesheet.css">
   </head>
   <body style="background-color: black;" onload="init()">
     <div id="main">
       <h1>Wasm UEFIPatch</h1>
       <h2>UEFI firmware patcher</h2>
+      <div id="wasm-progress-container">
+          <div class="progress-border">
+              <div id="wasm-progress-bar"></div>
+          </div>
+          <div id="wasm-progress-text"></div>
+      </div>
       <p class="title"><strong>Instructions:</strong></p>
       <p>
-        1. Load your firmware. <br>
+        1. Load your firmware. Drag and drop should work.<br>
         2. Configure patches. <br>
         3. Click "Patch". <br>
       </p>
@@ -24,7 +30,7 @@
           Old UEFITool engine is used, it has been known to <a target="_blank" href="https://github.com/LongSoft/UEFITool/issues/192">break some firmware images</a>. Proceed only if you have recovery method (or don't care).<br>
           Performance is roughly 80% the of the CLI version, due to Wasm overhead.<br>
       </p>
-      <label for="input-rom" class="file-upload-label"><strong>Choose Firmware:</strong><br></label>
+      <label for="input-rom"><strong>Choose Firmware:</strong><br></label>
       <input type="file" id="input-rom" accept=".rom,.bin,.hex,.fw,.img,.bin,.iso">
       <br>
       <div id="patches-selector">
@@ -32,7 +38,7 @@
         <p><strong>Patches:</strong></p>
         <div id="preset-patches">
           <input type="checkbox" data-patchname="CSB"><strong>CSB: </strong>Circumvent Secure Boot. Replaces all EFI_SECURITY_VIOLATION with EFI_SUCCESS in SecurityStubDxe. Only known working on AMD AMI boards.<br></input>
-          <input type="checkbox" data-patchname="TPM2EPS"><strong>TPM2EPS: </strong>Allow changing fTPM EPS. Highly untested, WIP. Will almost certainly brick your firmware. <a href="https://www.unknowncheats.me/forum/valorant/649260-tpm-spoofer.html">Source</a>.<br></input>
+          <input type="checkbox" data-patchname="TPM2EPS"><strong>TPM2EPS: </strong>Enable changing fTPM Endorsement Primary Seed. Highly untested, WIP. Will almost certainly brick your firmware. <a href="https://www.unknowncheats.me/forum/valorant/649260-tpm-spoofer.html">Source</a>.<br></input>
         </div>
         <div id="custom-patches">
         <input type="checkbox" data-patchname="custom"><strong>Custom: </strong>Enter below. <a href="patches.txt" target="_blank">Patch Format Guide</a>.</input>
@@ -44,6 +50,7 @@
         <pre id="patches-txt"></pre>
         <button id="run-patch">Patch</button>
         <p><strong>Output</strong></p>
+
         <pre id="output"></pre>
       </div>
     </div>
